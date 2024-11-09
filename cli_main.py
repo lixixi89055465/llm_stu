@@ -6,6 +6,7 @@
 # @Software: PyCharm 
 # @Comment :https://www.bilibili.com/video/BV1Sz421m7Rr?spm_id_from=333.788.videopod.episodes&vd_source=50305204d8a1be81f31d861b12d4d5cf
 import time
+from tools import tools_map
 
 
 def parse_thoughts(response):
@@ -109,7 +110,7 @@ def agent_execute(query, max_request_time):
 			action_name 到 函数的映射 map-> {action_name: } 
 			'''
 			# todo: tools_map 的实现
-			tools_map = {}
+			# tools_map = {}
 			func = tools_map.get(action_name)
 			observation = func(**action_args)
 		except Exception as err:

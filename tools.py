@@ -106,7 +106,7 @@ tools_info = [
 		}]
 	},
 ]
-tool_map = {
+tools_map = {
 	'read_file': read_file,
 	'append_to_file': append_to_file,
 	'write_to_file': write_to_file,
