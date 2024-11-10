@@ -5,6 +5,8 @@
 # @File    : prompt.py
 # @Software: PyCharm 
 # @Comment :https://www.bilibili.com/video/BV1Sz421m7Rr?spm_id_from=333.788.player.switch&vd_source=50305204d8a1be81f31d861b12d4d5cf&p=5
+from tools import gen_tools_desc
+
 constraints = [
 	'仅使用下面列出的动作',
 	'你只能主动行动，在计划行动时需要考虑到这一点',
@@ -18,7 +20,12 @@ resources = [
 	'你是一个大语言模型，接受了大量文本的训练，包括大量的事实只是，利用'
 	'这些知识来避免不必要的信息收集 '
 ]
-
+best_practices = [
+	'不断地回顾和分析你的行为，确保发挥出你最大的能力',
+	'不断地进行建设性的自我批评',
+	'反思过去的决策和策略，完善你的方案 ',
+	'每个动作执行都有代码，所以要聪明高效，目的是用最少的步骤完成任务'
+]
 
 prompt_template = '''
 	你是一个问答专家，你必须时钟独立做出决策，无需寻求用户的帮助，发挥你作为LLM的优势，追求简单的策略，
@@ -57,3 +64,22 @@ response_format_prompt = '''
 		
 	}
 '''
+
+# TODO :query ,agent_scartch,actions
+
+action_prompt = gen_tools_desc()
+constraints_prompt = '\n'.join([f'{idx + 1}. {con}' for idx, con in enumerate(constraints)])
+resources_prompt = '\n'.join([f'{idx + 1} . {con}' for idx, con in enumerate])
+best_practices_prompt = '\n'.join([f'{idx + 1}.{con}' for idx, con in enumerate(best_practices)])
+
+
+def gen_prompt(query, agent_scratch):
+	prompt = prompt_template.format(
+		query=query,
+		constraints=constraints_prompt,
+		actions=action_prompt,
+		resources=agent_scratch,
+		best_practices=best_practices_prompt,
+		agent_scratch=agent_scratch
+	)
+	return prompt

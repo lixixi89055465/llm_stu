@@ -7,6 +7,7 @@
 # @Comment :https://www.bilibili.com/video/BV1Sz421m7Rr?spm_id_from=333.788.player.switch&vd_source=50305204d8a1be81f31d861b12d4d5cf&p=4
 
 
+import json
 import os
 from langchain_community.tools.tavily_search import TavilySearchResults
 
@@ -113,3 +114,20 @@ tools_map = {
 	'search': search
 }
 
+
+def gen_tools_desc():
+	tools_desc = []
+	for idx, t in enumerate(tools_info):
+		args_desc = []
+		for info in t['args']:
+			args_desc.append({
+				'name': info['name'],
+				'description': info['description'],
+				'type': info['type']
+			})
+		args_desc = json.dumps(args_desc, ensure_ascii=False)
+		tool_desc = f"{idx + 1}, {t['name']}: {t['descriptionf']}," \
+			f"args:{args_desc}"
+		tools_desc.append(tool_desc)
+	tools_prompt = '\n'.join(tools_desc)
+	return tools_prompt
