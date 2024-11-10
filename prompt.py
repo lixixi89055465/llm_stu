@@ -83,3 +83,6 @@ def gen_prompt(query, agent_scratch):
 		agent_scratch=agent_scratch
 	)
 	return prompt
+
+
+user_prompt = '决定使用哪一个工具'

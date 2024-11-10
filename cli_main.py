@@ -7,7 +7,7 @@
 # @Comment :https://www.bilibili.com/video/BV1Sz421m7Rr?spm_id_from=333.788.videopod.episodes&vd_source=50305204d8a1be81f31d861b12d4d5cf
 import time
 from tools import tools_map
-
+from prompt import gen_prompt,user_prompt
 
 def parse_thoughts(response):
 	'''
@@ -117,9 +117,8 @@ def agent_execute(query, max_request_time):
 			print('调用工具一场:', err)
 		agent_scratch = agent_scratch + '\n' + observation
 
-		user_msg = '决定使用哪一个工具'
 		assistant_msg = parse_thoughts(response)
-		chat_history.append([user_msg, assistant_msg])
+		chat_history.append([user_prompt, assistant_msg])
 
 
 def main():

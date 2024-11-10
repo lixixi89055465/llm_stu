@@ -23,10 +23,22 @@ def call_stream_with_messages():
 	messages = [
 		{'role': 'user', 'content': '用萝卜，土豆，茄子做饭，给我个菜谱'}
 	]
-	response = Generation.call(
-
+	responses = Generation.call(
+		'qwen-plus',  # 模型列表：https://help.aliyun.com/zh/model-studio/getting-started/models
+		messages=messages,
+		seed=random.randint(1, 10000),  # set the random seed,optional default to 1234 if not set
+		result_format='message',
+		stream=True,
+		output_in_full=True,  # get streaming output incrementally,
+		api_key=api_key
 	)
-	pass
+	full_content = ''
+	for response in responses:
+		if response.status_code == HTTPStatus.OK:
+			full_content += response.output.choices[0]['message']['content']
+			print(response)
+		else:
+			print('Request id: %s Status code %s error code; %s error message')
 
 
 client = OpenAI(
