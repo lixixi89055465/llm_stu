@@ -5,7 +5,8 @@
 # @File    : prompt.py
 # @Software: PyCharm 
 # @Comment :https://www.bilibili.com/video/BV1Sz421m7Rr?spm_id_from=333.788.player.switch&vd_source=50305204d8a1be81f31d861b12d4d5cf&p=5
-from tools import gen_tools_desc
+# from tools import gen_tools_desc
+from verify.tools import gen_tools_desc
 
 constraints = [
 	'仅使用下面列出的动作',
@@ -69,7 +70,7 @@ response_format_prompt = '''
 
 action_prompt = gen_tools_desc()
 constraints_prompt = '\n'.join([f'{idx + 1}. {con}' for idx, con in enumerate(constraints)])
-resources_prompt = '\n'.join([f'{idx + 1} . {con}' for idx, con in enumerate])
+resources_prompt = '\n'.join([f'{idx + 1} . {con}' for idx, con in enumerate(resources)])
 best_practices_prompt = '\n'.join([f'{idx + 1}.{con}' for idx, con in enumerate(best_practices)])
 
 
@@ -78,9 +79,10 @@ def gen_prompt(query, agent_scratch):
 		query=query,
 		constraints=constraints_prompt,
 		actions=action_prompt,
-		resources=agent_scratch,
+		resources=resources_prompt,
 		best_practices=best_practices_prompt,
-		agent_scratch=agent_scratch
+		agent_scratch=agent_scratch,
+		response_format_prompt=response_format_prompt
 	)
 	return prompt
 

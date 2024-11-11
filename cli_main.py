@@ -6,8 +6,21 @@
 # @Software: PyCharm 
 # @Comment :https://www.bilibili.com/video/BV1Sz421m7Rr?spm_id_from=333.788.videopod.episodes&vd_source=50305204d8a1be81f31d861b12d4d5cf
 import time
-from tools import tools_map
-from prompt import gen_prompt,user_prompt
+# from tools import tools_map
+from verify.tools import tools_map
+from verify.prompt import gen_prompt, user_prompt
+from verify.model_provider import ModelProvider
+
+# Agent 入口
+'''
+todo:
+1.环境变量的设置 
+2.工具的引入 
+3.prompt模版 
+4.模型的初始化 
+'''
+mp = ModelProvider()
+
 
 def parse_thoughts(response):
 	'''
@@ -70,7 +83,8 @@ def agent_execute(query, max_request_time):
 		start_time = time.time()
 		print('********** {}. 开始调用塔模型llm'.format(cur_request_time), flush=True)
 		# call llm
-		response = call_llm()
+		# response = call_llm()
+		response = mp.chat(prompt, chat_history)
 		end_time = time.time()
 		print('***********{}。调用塔模型结束，耗时：{}.......'.format(cur_request_time, end_time - start_time))
 		if not response or not isinstance(response, dict):

@@ -20,7 +20,7 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 
 
 def _get_workdir_root():
-	workdir_root = os.envision.get('WORKDIR_ROOT', './data/llm_result')
+	workdir_root = os.environ.get('WORKDIR_ROOT', './data/llm_result')
 	return workdir_root
 
 
@@ -126,7 +126,7 @@ def gen_tools_desc():
 				'type': info['type']
 			})
 		args_desc = json.dumps(args_desc, ensure_ascii=False)
-		tool_desc = f"{idx + 1}, {t['name']}: {t['descriptionf']}," \
+		tool_desc = f"{idx + 1}, {t['name']}: {t['description']}," \
 			f"args:{args_desc}"
 		tools_desc.append(tool_desc)
 	tools_prompt = '\n'.join(tools_desc)

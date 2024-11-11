@@ -9,13 +9,13 @@ import os
 import json
 import dashscope
 from dashscope.api_entities.dashscope_response import Message
-from prompt import user_prompt
+from verify.prompt import user_prompt
 
 
 class ModelProvider(object):
 	def __init__(self):
-		self.api_key = os.environ.get('API_KEY')
-		self.model_name = os.environ.get('MODEL_NAME')
+		self.api_key = "sk-2041da74e9e043a9a66f2a4f15f65731"
+		self.model_name = "qwen1.5-110b-chat"
 		self._client = dashscope.Generation()
 		self.max_retry_time = 3
 
@@ -66,10 +66,11 @@ class ModelProvider(object):
 					}
 				}
 				'''
-				content = json.load(response['choices'][0]['message'])
-
-
-
-
+				# content = json.load(response['choices'][0]['message'])
+				content = response["output"]["text"]
+				content = content.replace('\'', '\"')
+				content=json.loads(content)
+				return content
 			except Exception as err:
 				print('调用塔模型出错：{}'.format(err))
+		return {}
