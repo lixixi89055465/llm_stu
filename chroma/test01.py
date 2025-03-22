@@ -57,17 +57,19 @@ def extract_text_from_pdf(filename,  #
 
 paragraphs = extract_text_from_pdf("llama2.pdf", min_line_length=10)
 
-for para in paragraphs[:4]:
-    print(para+"\n")
+# for para in paragraphs[:4]:
+#     print(para + "\n")
 
 from openai import OpenAI
 import os
 
 # 加载环境变量
 from dotenv import load_dotenv, find_dotenv
+
 _ = load_dotenv(find_dotenv(), verbose=True)  # 读取本地 .env 文件，里面定义了 OPENAI_API_KEY
 
-client = OpenAI()
+
+
 def get_completion(prompt, model="gpt-4o"):
     '''封装 openai 接口'''
     messages = [{"role": "user", "content": prompt}]
@@ -77,6 +79,8 @@ def get_completion(prompt, model="gpt-4o"):
         temperature=0,  # 模型输出的随机性，0 表示随机性最小
     )
     return response.choices[0].message.content
+
+
 def build_prompt(prompt_template, **kwargs):
     '''将 Prompt 模板赋值'''
     inputs = {}
@@ -87,6 +91,7 @@ def build_prompt(prompt_template, **kwargs):
             val = v
         inputs[k] = val
     return prompt_template.format(**inputs)
+
 
 prompt_template = """
 你是一个问答机器人。
@@ -104,6 +109,8 @@ prompt_template = """
 """
 import chromadb
 from chromadb.config import Settings
+
+
 class MyVectorDBConnector:
     def __init__(self, collection_name, embedding_fn):
         # 内存模式
@@ -134,19 +141,22 @@ class MyVectorDBConnector:
         )
         return results
 
+
 import numpy as np
 from numpy import dot
 from numpy.linalg import norm
 
+
 def cos_sim(a, b):
     '''余弦距离 -- 越大越相似'''
-    return dot(a, b)/(norm(a)*norm(b))
+    return dot(a, b) / (norm(a) * norm(b))
 
 
 def l2(a, b):
     '''欧氏距离 -- 越小越相似'''
-    x = np.asarray(a)-np.asarray(b)
+    x = np.asarray(a) - np.asarray(b)
     return norm(x)
+
 
 def get_embeddings(texts, model="text-embedding-ada-002", dimensions=None):
     '''封装 OpenAI 的 Embedding 模型接口'''
@@ -159,12 +169,11 @@ def get_embeddings(texts, model="text-embedding-ada-002", dimensions=None):
         data = client.embeddings.create(input=texts, model=model).data
     return [x.embedding for x in data]
 
+
 test_query = ["测试文本"]
-vec = get_embeddings(test_query)[0]
-print(f"Total dimension: {len(vec)}")
-print(f"First 10 elements: {vec[:10]}")
-
-
+# vec = get_embeddings(test_query)[0]
+# print(f"Total dimension: {len(vec)}")
+# print(f"First 10 elements: {vec[:10]}")
 
 # 创建一个向量数据库对象
 vector_db = MyVectorDBConnector(
@@ -173,8 +182,65 @@ vector_db = MyVectorDBConnector(
 )
 # 向向量数据库中添加文档
 vector_db.add_document(paragraphs)
-# user_query = 'Llama 2有多少参数'
-user_query = 'Does Llama 2 have a conversational variant'
-results = vector_db.search(user_query, 2)
-for para in results['documents'][0]:
-    print(para + '\n')
+user_query = 'Llama 2有多少参数'
+# user_query = 'Does Llama 2 have a conversational variant'
+# results = vector_db.search(user_query, 2)
+
+
+# for para in results['documents'][0]:
+#     print(para + '\n')
+
+
+class RAG_Bot:
+    def __init__(self, vector_db, llm_api, n_results=2):
+        self.vector_db = vector_db
+        self.llm_api = llm_api
+        self.n_results = n_results
+
+    def chat(self, user_query):
+        # 1.检索
+        search_results = self.vector_db.search(user_query, self.n_results)
+        # 2.构建 Prompt
+        prompt = build_prompt(
+            prompt_template,
+            context=search_results['documents'][0], query=user_query
+        )
+        # 3.调用 LLM
+        response = self.llm_api(prompt)
+        return response
+
+
+# 创建一个 RAG 机器人
+bot = RAG_Bot(
+    vector_db,
+    llm_api=get_completion
+)
+user_query = 'llama 2有多少参数?'
+response = bot.chat(user_query)
+# print(response)
+
+# model = 'text-embedding-3-large'
+model='text-embedding-ada-002'
+dimensions = 128
+query='国际争端'
+# 且能支持多国语言
+# query = 'global conflicts'
+documents = [
+    "联合国就苏丹达尔富尔地区大规模暴力事件发出警告",
+    "土耳其、芬兰、瑞典与北约代表将继续就瑞典“入约”问题进行谈判",
+    "日本岐阜市陆上自卫队射击场内发生枪击事件 3人受伤",
+    "国家游泳中心（水立方）：恢复游泳、嬉水乐园等水上项目运营",
+    "我国首次在空间站开展舱外辐射生物学暴露实验",
+]
+query_vec = get_embeddings([query], model=model, dimensions=dimensions)[0]
+doc_vecs = get_embeddings(documents, model=model, dimensions=dimensions)
+print('向量维度：{}'.format(query_vec))
+print()
+print('Query与 Documents的余弦距离：')
+for vec in doc_vecs:
+    print(cos_sim(query_vec, vec))
+
+print()
+print('query 与 Documents 的欧式距离 ：')
+for vec in doc_vecs:
+    print(l2(query_vec, vec))
