@@ -41,25 +41,25 @@ Settings.embed_model = HuggingFaceEmbedding(
     model_name='/home/nanji/.cache/modelscope/hub/models/BAAI/bge-base-zh-v1___5'
 )
 # 读取文档
-# documents = SimpleDirectoryReader(
-#     './data',
-#     # required_exts=['.txt']
-# ).load_data()
+documents = SimpleDirectoryReader(
+    './data',
+    # required_exts=['.txt']
+).load_data()
 
 # 对文档进行切分，将切分后的片段转化为embedding向量，构建向量索引
-# index = VectorStoreIndex.from_documents(
-#     documents,
-#     transformations=[SentenceSplitter(chunk_size=256)]
-# )
+index = VectorStoreIndex.from_documents(
+    documents,
+    transformations=[SentenceSplitter(chunk_size=256)]
+)
 
 # SentenceSplitter 参数详细设置：
 # 构建查询引擎
-# query_engine = index.as_query_engine(similarity_top_k=5)
-# response = query_engine.query('不耐疲劳，口燥、咽干可能是哪些证候？')
-# print(response)
+query_engine = index.as_query_engine(similarity_top_k=5)
+response = query_engine.query('不耐疲劳，口燥、咽干可能是哪些证候？')
+print(response)
 #
 # 讲 embedding 向量和向量索引存储到文件中
-# index.storage_context.persist(persist_dir='./doc_emb')
+index.storage_context.persist(persist_dir='./doc_emb')
 # 很方便的集成目前主流的向量数据库 chroma
 
 # 从存储文件中读取 embedding 向量和向量索引
