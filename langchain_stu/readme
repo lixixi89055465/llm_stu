@@ -1,0 +1,2 @@
+pip install Werkzeug==3.0.0 Flask-Login==0.6.3 Flask==3.0.0
+pip install --upgrade typing-extensions
