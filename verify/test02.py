@@ -2,7 +2,7 @@
 # @Time    : 2024/11/10 下午6:41
 # @Author  : nanji
 # @Site    : 
-# @File    : test02.py
+# @File    : create_collection.py
 # @Software: PyCharm 
 # @Comment :https://bailian.console.aliyun.com/?switchAgent=10375023&productCode=p_efm#/model-market/detail/qwen1.5-110b-chat
 

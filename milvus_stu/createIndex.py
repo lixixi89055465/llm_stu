@@ -5,7 +5,7 @@ from pymilvus import (
     Collection,
 )
 
-collection_name = 'hello_milvus1'
+collection_name = 'hello_milvus'
 host = '192.168.11.235'
 port = 19530
 username = ''
