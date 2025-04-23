@@ -1,8 +1,9 @@
 from langchain.prompts.few_shot import FewShotPromptTemplate
 from langchain.prompts.prompt import PromptTemplate
+
+
 # 加载 环境变量
 from dotenv import load_dotenv, find_dotenv
-
 _ = load_dotenv(
     find_dotenv(),
     verbose=True  # 读取本地.env 文件，里面定义了OPENAI_API_KEY
@@ -78,14 +79,20 @@ example_selector = SemanticSimilarityExampleSelector.from_examples(
     k=1
 )
 # 选择与输入最相似的示例
-question = '《西游记》和《三国演义》的作家都来自同一个国家吗?'
+question = '乔治-华盛顿的父亲是谁?'
 selected_examples = example_selector.select_examples(
     {
         'question': question
     }
 )
-print(f'最相似的示例:{question}')
-for example in selected_examples:
-    print('\n')
-    for k, v in example.items():
-        print(f'{k}:{v}')
+example_prompt = PromptTemplate(
+    input_variables=['question', 'answer'],
+    template='问题{question} \\n {answer}'
+)
+prompt = FewShotPromptTemplate(
+    example_selector=example_selector,
+    example_prompt=example_prompt,
+    suffix='问题:{input}',
+    input_variables=['input']
+)
+print(prompt.format(input='乔治.华盛顿的父亲是谁?'))
