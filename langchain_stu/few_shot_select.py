@@ -65,6 +65,7 @@ examples = [
 from langchain.prompts.example_selector import SemanticSimilarityExampleSelector
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
+# 使用寓意
 
 # 使用语义相似性实例选择器
 example_selector = SemanticSimilarityExampleSelector.from_examples(

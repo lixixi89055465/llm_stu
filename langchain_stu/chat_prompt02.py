@@ -7,7 +7,7 @@
 # @Comment :
 from langchain.prompts import HumanMessagePromptTemplate
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.prompts import SystemMessage
+from langchain_core.messages import SystemMessage
 
 # 使用langchain定义的SystemMessage、HumanMessagePromptTemplate等工具类定义消息，
 # 跟前面的例子类

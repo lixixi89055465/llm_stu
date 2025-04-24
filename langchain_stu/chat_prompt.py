@@ -6,6 +6,10 @@
 # @Software: PyCharm 
 # @Comment :
 from langchain_core.prompts import ChatPromptTemplate
+import os
+from dotenv import load_dotenv
+load_dotenv()
+# api_key = os.environ.get("DASH_SCOPE_API_KEY")
 
 # 通过一个消息数组创建聊天消息模板
 # 数组每一个元素代表一条消息，每个消息元组，第一个元素代表消息角色（也成为消息类型）
