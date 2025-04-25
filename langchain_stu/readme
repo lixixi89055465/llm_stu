@@ -4,5 +4,5 @@ pip install --upgrade typing-extensions
 pip install "langserve[all]"
 pip install "langserve[all]"
 
-pip install -U langchain-cli
+pip install -U langchain-cli langchain_openai langchain_community dashscope
 

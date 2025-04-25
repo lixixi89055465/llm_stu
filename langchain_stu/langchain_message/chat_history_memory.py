@@ -13,10 +13,9 @@ from langchain_core.prompts import MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 api_key = os.environ.get("DASH_SCOPE_API_KEY")
-
-
 
 # 创建一个聊天提示词模板
 prompt = ChatPromptTemplate.from_messages(
