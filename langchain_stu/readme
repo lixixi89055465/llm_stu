@@ -6,3 +6,4 @@ pip install "langserve[all]"
 
 pip install -U langchain-cli langchain_openai langchain_community dashscope
 
+pip install redis

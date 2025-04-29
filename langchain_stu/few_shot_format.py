@@ -34,12 +34,12 @@ exmaple_prompt = PromptTemplate(input_variables=['question', 'answer'],
 # ** examples[0] name='乔治-华盛顿的祖父母中的母亲是谁？‘,'answer':'Joseph Ball
 print(exmaple_prompt.format(**examples[0]))
 
-# prompt = FewShotPromptTemplate(
-#     examples=examples,
-#     example_prompt=exmaple_prompt,
-#     suffix="问题:{input}",
-#     input_variables=['input']
-# )
-# print(**examples[0])
-# print(prompt.format(input="乔治·华盛顿的父亲是谁？"))
-# print(exmaple_prompt.format(**examples[0]))
+prompt = FewShotPromptTemplate(
+    examples=examples,
+    example_prompt=exmaple_prompt,
+    suffix="问题:{input}",
+    input_variables=['input']
+)
+print(**examples[0])
+print(prompt.format(input="乔治·华盛顿的父亲是谁？"))
+print(exmaple_prompt.format(**examples[0]))

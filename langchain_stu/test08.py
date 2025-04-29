@@ -5,12 +5,22 @@
 # @File : test08.py
 # @Software: PyCharm 
 # @Comment :
-LANGSMITH_TRACING = True
-LANGSMITH_ENDPOINT = "https://api.smith.langchain.com"
-LANGSMITH_API_KEY = "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"
-LANGSMITH_PROJECT = "pr-only-platinum-89"
-OPENAI_API_KEY = "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"
-from langchain_openai import ChatOpenAI
 
-llm = ChatOpenAI()
-llm.invoke("Hello, world!")
+from dotenv import load_dotenv, find_dotenv
+
+_ = load_dotenv(
+    find_dotenv(),
+    verbose=True  # 读取本地.env 文件，里面定义了OPENAI_API_KEY
+)
+from openai import OpenAI
+client = OpenAI()
+
+completion = client.chat.completions.create(
+  model="gpt-4.1",
+  messages=[
+    {"role": "developer", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Hello!"}
+  ]
+)
+
+print(completion.choices[0].message)
