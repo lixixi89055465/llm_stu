@@ -14,8 +14,8 @@ from langchain_openai import ChatOpenAI
 import os
 
 # 加载环境变量
-os.environ['OPENAI_API_KEY'] = ''
-os.environ['OPENAI_BASE_URL'] = ''
+os.environ['OPENAI_API_KEY'] = 'hk-v3x5ll1000053052cb6ee2d41a9e5c4e0dbbb349026580e3'
+os.environ['OPENAI_BASE_URL'] = 'https://api.openai-hk.com/v1'
 
 # 创建一个聊天提示词模板
 prompt = ChatPromptTemplate.from_messages(
