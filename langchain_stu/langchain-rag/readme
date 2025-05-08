@@ -1,0 +1,4 @@
+pip install streamlit==1.39.0
+pip install chroma-hnswlib==0.7.5 chromadb==0.5.4
+#pip install hnswlib
+#pip install langchain_chroma
