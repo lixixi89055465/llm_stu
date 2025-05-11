@@ -9,6 +9,12 @@
 import os
 os.environ[
     'USER_AGENT'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+# os.environ['TAVILY_API_KEY'] = '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'
+# os.environ["LANGCHAIN_TRACING_V2"] = "true"
+# os.environ["LANGCHAIN_API_KEY"] = "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"
+# os.environ['OPENAI_API_KEY'] = 'hk-v3x5ll1000053052cb6ee2d41a9e5c4e0dbbb349026580e3'
+# os.environ['OPENAI_BASE_URL'] = 'https://api.openai-hk.com/v1'
+
 
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.document_loaders import RecursiveUrlLoader
@@ -21,12 +27,7 @@ from langchain_core.tools.retriever import create_retriever_tool
 # os.environ['TAVILY_API_KEY'] = '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'
 from langchain_community.tools.tavily_search import TavilySearchResults
 import os
-os.environ['TAVILY_API_KEY'] = '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'
 
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_API_KEY"] = "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"
-os.environ['OPENAI_API_KEY'] = 'hk-v3x5ll1000053052cb6ee2d41a9e5c4e0dbbb349026580e3'
-os.environ['OPENAI_BASE_URL'] = 'https://api.openai-hk.com/v1'
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_community.document_loaders import \

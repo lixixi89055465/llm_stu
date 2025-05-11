@@ -5,6 +5,19 @@
 # @File : langgraph_base.py
 # @Software: PyCharm 
 # @Comment :
+# 加载环境变量
+import os
+
+os.environ[
+    'USER_AGENT'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+os.environ['TAVILY_API_KEY'] = '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'
+os.environ['LANGSMITH_ENDPOINT'] = "https://api.smith.langchain.com"
+
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_API_KEY"] = "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"
+os.environ['OPENAI_API_KEY'] = 'hk-v3x5ll1000053052cb6ee2d41a9e5c4e0dbbb349026580e3'
+os.environ['OPENAI_BASE_URL'] = 'https://api.openai-hk.com/v1'
+
 from typing import Literal
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
@@ -78,7 +91,23 @@ workflow.add_conditional_edges(
 # 这意味着在调用'tools'后，接下来调用'agent'节点。
 workflow.add_edge('tools', 'agent')
 # 初始化内已在图运行之间持久化状态
-checkpointer=MemorySaver()# 可以存redis,MongoDB
+checkpointer = MemorySaver()  # 可以存redis,MongoDB
 # 5.编译图
 # 这将编译成一个LangChain可运行对象，
-# zhe
+# 这意味着你可以像使用其他可运行对象一样使用它。
+# 注意,我们（可选地）在编译图时传递内存
+app = workflow.compile(checkpointer=checkpointer)
+# 6.执行图，使用可运行对象
+final_state = app.invoke(
+    {'messages': [HumanMessage(content='上海的天气怎么样?')]},
+    config={'configurable': {'thread_id': 42}}
+)
+# 从final state 中获取最后一条消息的内容
+result = final_state['messages'][-1].content
+print(result)
+final_state = app.invoke(
+    {'messages': [HumanMessage(content='我问的那个城市?')]},
+    config={'configurable': {'thread_id': 42}}
+)
+result = final_state['messages'][-1].content
+print(result)
