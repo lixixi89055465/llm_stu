@@ -31,6 +31,11 @@ from langchain.tools import BaseTool
 from langgraph.prebuilt import ToolNode
 
 
+class createCarInput(BaseModel):
+    a: str = Field(..., description='发动机')
+    b: str = Field(..., description='底盘')
+    c: str = Field(..., description='变速箱')
+
 
 class createCar(BaseTool):
     name = 'createCar'
@@ -47,3 +52,91 @@ class createCar(BaseTool):
     async def _arun(self, a: str, b: str, c: str) -> str:
         print('调用异步造车的方法')
         return a + b + c
+
+
+class createAccountInput(BaseModel):
+    a: str = Field(..., description="账号名称")
+
+
+class createAccount(BaseModel):
+    name = 'createAccount'
+    description = ('这是一个生成账号信息的方法，需要用户提供账号名称，才能进行账号的创建。'
+                   '如果 用户没有提供账号名称，则提示用户给出账号名称并再进行账号的创建。')
+    arg_schema: Type[BaseModel] = createAccountInput
+
+    def _run(self, a: str) -> str:
+        print('调用同步账号信息的方法')
+        return a
+
+    async def _arun(self, a: str) -> str:
+        print('调用异步账号信息的方法')
+        return a
+
+
+class bingCarAccountInput(BaseModel):
+    a: str = Field(..., description='账号名称')
+    b: str = Field(..., description='车信息')
+
+
+class bingCarAccount(BaseModel):
+    name = 'bingCarAccount'
+    description = ('这是一个绑定账号和车信息的方法，需要用户提供账号名称和车信息，才能进行账号和车信息的绑定，'
+                   '如果用户没有提供账号名称或车信息，则提示用户给出账号名称和车信息'
+                   '并再进行账号和车信息的绑定。不能单独使用用户提示')
+    args_schema: Type[BaseModel] = bingCarAccountInput
+
+    def _run(self, a: str, b: str) -> str:
+        print('调用同步账号和车信息绑定的方法')
+        return a + b
+
+    async def _arun(self, a: str, b: str) -> str:
+        print('调用异步账号和车信息绑定的方法')
+        return a + b
+
+
+tools = [createCar(), createAccount(), bingCarAccount()]
+tool_node = ToolNode(tools)
+model = ChatOpenAI(temperature=0, model='gpt-4o')
+
+
+def should_continue(state: MessagesState) -> Literal['tools', END]:
+    '''
+    判断是否需要调用工具，如果调用工具，则返回 tools,否则返回END
+    '''
+    message = state['messages']
+    last_message = message[-1]
+    if last_message.tool_calls:
+        return 'tools'
+    return END
+
+
+def call_model(state: MessagesState) -> MessagesState:
+    '''
+    调用大模型
+    '''
+    messages = state['messages']
+    response = model.invoke(messages)
+    return {'messages': [response]}
+
+
+workflow = StateGraph(MessagesState)
+
+workflow.add_node('agent', call_model)
+workflow.add_node('tools', tool_node)
+
+workflow.add_entry_point('agent')
+
+workflow.add_conditional_edges('agent', should_continue)
+
+workflow.add_edge('agent', 'tools', should_continue)
+
+checkpointer = MemorySaver()
+
+app = workflow.compile(checkpointer=checkpointer)
+messages = []
+while True:
+    user_input = input('请输入:')
+    messages.append(HumanMessage(content=user_input))
+    response = app.invoke({'messages': messages}, config={'configurable': {"thread_id": 42}})
+    messages.append(AIMessage(content=response))
+    print(response)
