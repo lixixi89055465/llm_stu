@@ -10,3 +10,8 @@ pip install redis
 pip install faiss-cpu
 
 pip install beautifulsoup4 tavily-python
+
+# test_chain
+pip install Flask==3.0.3
+pip install langchain-community==0.2.12
+pip install flask_api

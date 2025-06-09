@@ -31,8 +31,12 @@ from langchain.tools import BaseTool
 from langgraph.prebuilt import ToolNode
 import os
 
-os.environ["OPENAI_API_BASE"] = "https://api.fe8.cn/v1"
-os.environ["OPENAI_API_KEY"] = "sk-KtPNRHP3PqYA7adlrr3JcaNwsuv5jnnDsshW6vT1NQ6rVBZa"
+# os.environ["OPENAI_API_BASE"] = "https://api.fe8.cn/v1"
+# os.environ["OPENAI_API_KEY"] = "sk-KtPNRHP3PqYA7adlrr3JcaNwsuv5jnnDsshW6vT1NQ6rVBZa"
+# 加载环境变量
+import os
+os.environ['OPENAI_API_KEY'] = 'hk-v3x5ll1000053052cb6ee2d41a9e5c4e0dbbb349026580e3'
+os.environ['OPENAI_BASE_URL'] = 'https://api.openai-hk.com/v1'
 
 
 class createCarInput(BaseModel):
@@ -103,7 +107,9 @@ class bingCarAccount(BaseTool):
 tools = [createCar(), createAccount(), bingCarAccount()]
 tool_node = ToolNode(tools)
 # model = ChatOpenAI(temperature=0, model='gpt-4o').bind_tools(tools)
+# qwen2:latest
 model = ChatOpenAI(temperature=0, model='gpt-4o')
+# model = ChatOpenAI(temperature=0, model='qwen2:latest')
 
 
 def should_continue(state: MessagesState) -> Literal['tools', END]:
@@ -144,7 +150,8 @@ messages = []
 while True:
     user_input = input('请输入:')
     messages.append(HumanMessage(content=user_input))
-    response = app.invoke({'messages': messages}, config={'configurable': {"thread_id": 42}})
+    response = app.invoke({'messages': messages},
+                          config={'configurable': {"thread_id": 42}})
     # response = app.invoke({'messages': messages})
     messages.append(AIMessage(content=response['messages'][-1].content))
     print(response)
