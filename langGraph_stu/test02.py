@@ -18,7 +18,7 @@ from pydantic.v1 import BaseModel, Field
 from rag_tool import ragTool
 from langchain.agents import create_openai_tools_agent, AgentExecutor
 
-_ = load_dotenv("/Users/zhulang/work/llm/RAG/.env")
+# _ = load_dotenv("/Users/zhulang/work/llm/RAG/.env")
 
 rag_tool = ragTool()
 
@@ -179,8 +179,8 @@ supervisor_chain = prompt | llm.bind_functions(functions=[function_def],
 
 
 class AgentState(TypedDict):
-    messages: Annotated[Sequence[BaseMessage], operator.add]
     next: str
+    messages: Annotated[Sequence[BaseMessage], operator.add]
 
 
 work_flow = StateGraph(AgentState)
@@ -200,7 +200,21 @@ conditional_map = {
     "FINISH": END,
 }
 
-work_flow.add_conditional_edges('supervisor', lambda x: x['next'], conditional_map)
+
+def route_node(state):
+    '''
+    判断是否需要调用工具，如果调用工具，则返回 tools,否则返回END
+    '''
+    messages = state['messages']
+    last_message = messages[-1]
+    if last_message.tool_calls:
+        return 'tools'
+    return END
+
+
+
+
+work_flow.add_conditional_edges('supervisor', route_node, conditional_map)
 # work_flow.add_conditional_edges("supervisor", lambda x: , conditional_map)
 
 work_flow.set_entry_point("supervisor")

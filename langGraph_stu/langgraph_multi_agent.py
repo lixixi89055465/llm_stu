@@ -107,6 +107,7 @@ class ragTool(BaseTool):
     def _run(self, question):
         return rag_tool.get_answer(question)
 
+
 def create_agent(llm, tools, system_prompt):
     prompt = ChatPromptTemplate.from_messages([
         ('system', system_prompt),
@@ -207,7 +208,9 @@ conditional_map = {
     "FINISH": END,
 }
 
-work_flow.add_conditional_edges('supervisor', lambda x: x['next'], conditional_map)
+work_flow.add_conditional_edges('supervisor',
+                                lambda x: x['next'],
+                                conditional_map)
 work_flow.set_entry_point('supervisor')
 graph = work_flow.compile()
 
