@@ -4,7 +4,7 @@
 # @Site : https://www.bilibili.com/video/BV1boTxzREoH/?spm_id_from=333.1391.0.0&vd_source=50305204d8a1be81f31d861b12d4d5cf
 # @File : langgraph_base.py
 # @Software: PyCharm 
-# @Comment :
+# @Comment : python==3.12
 
 from typing import Literal
 from langchain_core.messages import HumanMessage
@@ -14,7 +14,9 @@ from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph, MessagesState
 from langgraph.prebuilt import ToolNode
-
+import os
+os.environ['OPENAI_API_KEY'] = 'hk-19nwjy1000053052d1b82000b4d0d9410f63a041519dd5b6'
+os.environ['OPENAI_BASE_URL'] = 'https://api.openai-hk.com/v1'
 
 # 定义 工具函数，用于嗲里调用外部工具
 @tool
@@ -30,9 +32,9 @@ tools = [search]
 # 创建工具节点
 tool_node = ToolNode(tools)
 # 1.初始化模型和工具，定义并绑定工具到模型
-# model = ChatOpenAI(model='gpt-4o', temperature=0).bind_tools(tools)
 base_url = "http://192.168.11.178:11434/v1"
 model = ChatOpenAI(base_url=base_url, api_key='empty', model='qwen2:latest', temperature=0).bind_tools(tools)
+# model = ChatOpenAI(model='gpt-4o', temperature=0).bind_tools(tools)
 
 
 # 定义函数，定义并绑定工具到模型
@@ -87,9 +89,13 @@ final_state = app.invoke(
     {'messages': [HumanMessage(content='上海的天气怎么样?')]},
     config={'configurable': {'thread_id': 42}}
 )
-
 result = final_state['messages'][-1].content
 print(result)
+
+final_state = app.invoke(
+    {'messages': [HumanMessage(content='我问的那个城市?')]},
+    config={'configurable': {'thread_id': 42}}
+)
 
 # 将生成的图片保存到文件
 graph_png = app.get_graph().draw_mermaid_png()
