@@ -6,13 +6,15 @@
 # @Software: PyCharm 
 # @Comment : python=3.12
 import os
+from typing import Literal
+from langgraph.graph import END, StateGraph, MessagesState
 
 os.environ['TAVILY_API_KEY'] = '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'
 
-# os.environ["LANGCHAIN_TRACING_V2"] = "true"
-# os.environ["LANGCHAIN_API_KEY"] = "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"
-# os.environ['OPENAI_API_KEY'] = 'hk-v3x5ll1000053052cb6ee2d41a9e5c4e0dbbb349026580e3'
-# os.environ['OPENAI_BASE_URL'] = 'https://api.openai-hk.com/v1'
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_API_KEY"] = "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"
+os.environ['OPENAI_API_KEY'] = 'hk-v3x5ll1000053052cb6ee2d41a9e5c4e0dbbb349026580e3'
+os.environ['OPENAI_BASE_URL'] = 'https://api.openai-hk.com/v1'
 
 # 导入 langchain 的 hub哭和 ChatOpenAI类，以及 asyncio
 from langchain import hub
@@ -32,12 +34,14 @@ prompt.pretty_print()
 # 选择驱动代理的 LLM，使用 OpenAI 的 chatGPT-4o 模型
 # llm = ChatOpenAI(model='gpt-4o')
 base_url = "http://192.168.11.178:11434/v1"
-llm = ChatOpenAI(base_url=base_url, api_key='empty', model='qwen2:latest', temperature=0).bind_tools(tools)
+llm = ChatOpenAI(base_url=base_url, api_key='empty',
+                 model='qwen2:latest',
+                 temperature=0).bind_tools(tools)
 # model = ChatOpenAI(model='gpt-4o', temperature=0).bind_tools(tools)
 
 
 # 创建一个 REACT 代理执行器，使用只能怪的 LLM 和工具，并应用聪 hub中获取的 prompt
-agent_executor = create_react_agent(llm, tools, messages_modifier=prompt)
+agent_executor = create_react_agent(llm, tools, state_modifier=prompt)
 # 调用代理执行器，询问"谁是美国公开赛的冠军"
 # agent_executor.invoke({'messages': [('user', '谁是美国公开赛的获胜者')]})
 import operator
@@ -106,16 +110,28 @@ class Act(BaseModel):
 # 创建一个重新计划的提示模板
 replanner_prompt = ChatPromptTemplate.from_template(
     """对于给定的目标，提出一个简单的逐步计划。这个计划应该包含独立的任务，
-    如果正确执行将得出正确的答案。不要添加任何多余的步骤。最后一步的结果应该是最终答案。确保每一步都有所有必要的信息 - 不要跳过步骤。
+    如果正确执行将得出正确的答案。不要添加任何多余的步骤。最后一步的结果应该是最终答案。
+    确保每一步都有所有必要的信息 - 不要跳过步骤。
     你的目标是：
     {input}
    你的原计划是： 
    {plan} 
    你目前已完成的步骤是： 
    {past_steps}
-   相应地更新你的计划。如果不需要更多步骤并且可以返回给用户，那么就这样回应。如果需要，填写计划。只添加仍然需要完成的步骤。不要返回已完成的步骤作为计划的一部分。
+   相应地更新你的计划。如果不需要更多步骤并且可以返回给用户，那么就这样回应。如果需要，填写计划。
+   只添加仍然需要完成的步骤。不要返回已完成的步骤作为计划的一部分。
     """
 )
+# replanner = replanner_prompt | ChatOpenAI(
+#     model='gpt-4o', temperature=0
+# ).with_structured_output(Act)
+replanner = replanner_prompt | ChatOpenAI(
+    base_url=base_url,
+    api_key='empty',
+    model='qwen2:latest', temperature=0
+).with_structured_output(Act)
+# 使用指定的提示模板创建一个重新计划生成器，使用 OpenAI ChatGPT-4o模型
+from langgraph.graph import StateGraph, START
 
 
 # 使用指定的提示模板创建一个重新计划生成器，使用OpenAI的ChatGPT-4o模型
@@ -127,4 +143,56 @@ async def main():
 
     # 定义一个异步函数，用于执行步骤
     async def execute_step(state: PlanExecute):
-        pass
+        plan = state['plan']
+        plan_str = '\n'.join(f'{i + 1},{step}' for i, step in enumerate(plan))
+        task = plan[0]
+        task_formatted = f'''
+        对于一下计划:
+        {plan_str}\n\n你的任务执行第{1}步，{task},'''
+        agent_response = await agent_executor.ainvoke(
+            {'messages': [('user', task_formatted)]}
+        )
+        return {
+            'past_steps': state['past_steps'] + [(task, agent_response['messages'][-1].content)]
+        }
+
+    # 定义一个函数，用于判断是否结束
+    async def replan_step(state: PlanExecute):
+        output = await replanner.ainvoke(state)
+        if isinstance(output.action, Response):
+            return {'response': output.action.response}
+        else:
+            return {'plan': output.action.steps}
+
+    def should_end(state: PlanExecute) -> Literal['agent', '__end__']:
+        if 'response' in state and state['response']:
+            return '__end__'
+        else:
+            return 'agent'
+
+    # 创建一个状态图 ,初始化 PlanExecute
+    workflow = StateGraph(PlanExecute)
+    # 添加计划节点
+    workflow.add_node('planner', plan_step)
+    # 添加执行步骤节点
+    workflow.add_node('agent', execute_step)
+    # 添加重新计划节点
+    workflow.add_node('replan', replan_step)
+    # 设置聪开始到计划节点的变
+    workflow.add_edge(START, 'planner')
+    # 设置从计划到代理节点的变
+    workflow.add_edge('planner', 'agent')
+    # 设置聪代理到重新计划节点的变
+    workflow.add_edge('agent', 'replan')
+    # 添加条件边，用于判断下一步操作
+    workflow.add_conditional_edges(
+        'replan',
+        # 传入判断函数，确定下一个节点
+        should_end
+    )
+    # 变异状态图，生成 LangChain可运行对象
+    app = workflow.compile()
+    # 将生成的图片保存到文件
+    graph_png = app.get_graph().draw_mermaid_png()
+    with open('plan_execute.png', 'wb') as f:
+        f.write(graph_png)
