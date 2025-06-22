@@ -26,7 +26,8 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph, MessagesState
-from langchain.pydantic_v1 import BaseModel, Field
+# from langchain.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 from langgraph.prebuilt import ToolNode
 import os
